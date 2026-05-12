@@ -3,7 +3,7 @@ version: '3.8'
 services:
   db:
     image: postgres:15
-    container_name: ia_wrapper_test
+    container_name: ai_wrapper_test
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}
