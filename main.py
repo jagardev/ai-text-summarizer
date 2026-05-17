@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 
 # Load dotenv config before loading our custom modules
 load_dotenv()
@@ -11,15 +12,20 @@ from routers import ai_tasks
 import models
 from database import engine
 
+# Command SQLAlchemy to create the tables in the database if they don't exist
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(models.Base.metadata.create_all)
+    yield
+
 # API Initialization with metadata for Swagger UI
 app = FastAPI(
+    lifespan=lifespan,
     title="AI Text Summarizer API",
     description="A robust backend REST API leveraging Groq's Llama 3.1 for text summarization.",
     version="1.0.0"
 )
-
-# Command SQLAlchemy to create the tables in the database if they don't exist
-models.Base.metadata.create_all(bind=engine)
 
 # Including the routers
 app.include_router(ai_tasks.router, prefix="/ai", tags=["Artificial Intelligence"])

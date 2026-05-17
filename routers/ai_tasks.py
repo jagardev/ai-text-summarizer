@@ -1,7 +1,8 @@
 import os
 from fastapi import APIRouter, HTTPException, Depends
-from groq import Groq
-from sqlalchemy.orm import Session
+from groq import AsyncGroq
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from schemas import PromptRequest
 from database import get_db
@@ -16,18 +17,18 @@ router = APIRouter()
 
 # Groq client initialization
 # It automatically looks for the GROQ_API_KEY variable in the .env file
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+client = AsyncGroq(api_key=os.environ.get("GROQ_API_KEY"))
 
 # POST endpoint to summarize text using Groq and Llama 3
 @router.post("/summarize")
-def summarize_text(request: PromptRequest, db: Session = Depends(get_db)) -> dict:
+async def summarize_text(request: PromptRequest, db: AsyncSession = Depends(get_db)) -> dict:
     """
     Insert a long text (max. 5000 characters) to get a summarized version.
     """
     try:
         # Call to the Groq API using the official SDK
         # We use Llama 3 (8B parameters), which is a fast open-source model free on Groq
-        chat_completion = client.chat.completions.create(
+        chat_completion = await client.chat.completions.create(
             messages=[
                 {
                     "role": "system",
@@ -52,8 +53,8 @@ def summarize_text(request: PromptRequest, db: Session = Depends(get_db)) -> dic
         
         # Add the new instance to the session and commit it
         db.add(new_summary)
-        db.commit()
-        db.refresh(new_summary) #Refresh to obtain the generated ID
+        await db.commit()
+        await db.refresh(new_summary) #Refresh to obtain the generated ID
         
         # Return the clean JSON to the frontend
         return {
@@ -64,20 +65,23 @@ def summarize_text(request: PromptRequest, db: Session = Depends(get_db)) -> dic
         
     except Exception as e:
         # Rollback in case the db fails, so we do not let any transactions half way
-        db.rollback()
+        await db.rollback()
         # Error handling to catch any SDK exception
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 # GET Endpoint to make a query using SQLAlchemy, retrieving our history of summaries stored in our db
 @router.get("/history")
-def get_summary_history(db: Session = Depends(get_db), limit: int = 10) -> list:
+async def get_summary_history(db: AsyncSession = Depends(get_db), limit: int = 10) -> list:
     """
     Obtain a history of texts that have been summarized.
     """
     try:
         # Query to our database using SQLAlchemy.
         # We ask for every summary, ordered by latest to oldest, limiting to 10 results maximum.
-        history = db.query(models.Summary).order_by(models.Summary.created_at.desc()).limit(limit).all()
+        result = await db.execute(
+            select(models.Summary).order_by(models.Summary.created_at.desc()).limit(limit)
+        )
+        history = result.scalars().all()
         
         # Convert the objects to dictionaries
         formatted_history = []
@@ -93,6 +97,3 @@ def get_summary_history(db: Session = Depends(get_db), limit: int = 10) -> list:
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    
-
-    
