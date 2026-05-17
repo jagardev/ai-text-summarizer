@@ -1,5 +1,6 @@
 import os
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
+from rate_limiter import limiter
 from groq import AsyncGroq
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -21,9 +22,10 @@ client = AsyncGroq(api_key=os.environ.get("GROQ_API_KEY"))
 
 # POST endpoint to summarize text using Groq and Llama 3
 @router.post("/summarize")
-async def summarize_text(request: PromptRequest, db: AsyncSession = Depends(get_db)) -> dict:
+@limiter.limit("5/minute") # 5 prompts per minute at max
+async def summarize_text(request: Request, payload: PromptRequest, db: AsyncSession = Depends(get_db)) -> dict:
     """
-    Insert a long text (max. 5000 characters) to get a summarized version.
+    Insert a long text (max. 10.000 characters) to get a summarized version.
     """
     try:
         # Call to the Groq API using the official SDK
@@ -36,7 +38,7 @@ async def summarize_text(request: PromptRequest, db: AsyncSession = Depends(get_
                 },
                 {
                     "role": "user",
-                    "content": f"Summarize this text: {request.text_input}",
+                    "content": f"Summarize this text: {payload.text_input}",
                 }
             ],
             model="llama-3.1-8b-instant",
@@ -47,7 +49,7 @@ async def summarize_text(request: PromptRequest, db: AsyncSession = Depends(get_
         
         # Create a new instance using our object Summary
         new_summary = models.Summary(
-            original_text=request.text_input,
+            original_text=payload.text_input,
             summary_text=final_summary
         )
         
@@ -71,7 +73,8 @@ async def summarize_text(request: PromptRequest, db: AsyncSession = Depends(get_
 
 # GET Endpoint to make a query using SQLAlchemy, retrieving our history of summaries stored in our db
 @router.get("/history")
-async def get_summary_history(db: AsyncSession = Depends(get_db), limit: int = 10) -> list:
+@limiter.limit("5/minute") # 5 prompts per minute at max
+async def get_summary_history(request: Request, db: AsyncSession = Depends(get_db), limit: int = 10) -> list:
     """
     Obtain a history of texts that have been summarized.
     """
