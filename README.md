@@ -24,7 +24,7 @@ Ensure the following dependencies are installed prior to setup:
 1. **Clone the repository:**
 
 ```bash
-git clone https://github.com/DkayMM/ai_text_summarizer.git
+git clone https://github.com/jairo-ga/ai_text_summarizer.git
 cd ai_text_summarizer
 ```
 
