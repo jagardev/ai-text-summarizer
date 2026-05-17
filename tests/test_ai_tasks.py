@@ -117,3 +117,14 @@ async def test_post_summarize(async_client, mocker):
 
     # Cleanup
     app.dependency_overrides.clear()
+
+# Rate limiting test
+async def test_rate_limiter_blocks_abuse(async_client):
+    """
+    Test that making more than 5 requests in a minute triggers a 429 error.
+    """
+    for _ in range(6):
+        response = await async_client.get("/ai/history")
+    
+    # Assert that the 6th request is blocked
+    assert response.status_code == 429
