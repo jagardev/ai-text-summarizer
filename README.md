@@ -36,8 +36,8 @@ Ensure the following dependencies are installed prior to setup:
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/jagardev/ai-text-summarizer.git
-cd ai-text-summarizer
+git clone https://github.com/jagardev/summarAIzer.git
+cd summarAIzer
 ```
 
 ### Backend Setup
@@ -45,7 +45,7 @@ cd ai-text-summarizer
 Navigate to the `backend` directory and create a `.env` file:
 ```env
 GROQ_API_KEY=gsk_your_api_key_here
-DB_NAME=ai_text_summarizer
+DB_NAME=summaraizer
 DB_USER=admin
 DB_PASSWORD=your_secure_password
 DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}

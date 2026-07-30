@@ -1,9 +1,9 @@
-version: '3.8'
+name: summaraizer
 
 services:
   db:
     image: postgres:15
-    container_name: ai_text_summarizer
+    container_name: summaraizer
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}

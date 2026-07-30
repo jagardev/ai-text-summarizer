@@ -5,7 +5,7 @@ import "../styles/global.css";
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
     <title>SummarAIzer</title>
@@ -130,6 +130,11 @@ import "../styles/global.css";
 
           <div class="flex items-center gap-1 flex-shrink-0 pr-1"></div>
         </div>
+
+        <!-- Cold start warning -->
+        <p class="mt-4 text-[16px] text-zinc-500 font-light opacity-80">
+          The server may take up to 30 seconds to wake up on your first request.
+        </p>
       </div>
 
       <!-- CHAT THREAD STATE (HIDDEN BY DEFAULT) -->
@@ -177,7 +182,8 @@ import "../styles/global.css";
     </div>
 
     <script>
-      const API_URL = import.meta.env.PUBLIC_API_URL || "http://127.0.0.1:8000/ai";
+      const API_URL =
+        import.meta.env.PUBLIC_API_URL || "http://127.0.0.1:8000/ai";
 
       const emptyState = document.getElementById("emptyState");
       const chatThread = document.getElementById("chatThread");
