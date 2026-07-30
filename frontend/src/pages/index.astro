@@ -298,9 +298,21 @@ import "../styles/global.css";
                   JSON.stringify(session.messages),
                 );
                 return `
-                    <button class="w-full text-left px-4 py-3 rounded-xl hover:bg-[#232326] text-[17px] font-light text-zinc-300 truncate transition-all duration-200 cursor-pointer history-item" data-session="${session.session_id}" data-messages="${encodedMessages}">
-                      <span class="mr-2 opacity-50">💬</span>${escapeHtml(firstMsg.original_text).substring(0, 30)}...
-                    </button>
+                    <div class="group relative flex items-center w-full rounded-xl hover:bg-[#232326] transition-all duration-200">
+                      <button class="flex-1 text-left px-4 py-3 text-[17px] font-light text-zinc-300 truncate cursor-pointer history-item" data-session="${session.session_id}" data-messages="${encodedMessages}">
+                        <span class="mr-2 opacity-50">💬</span>${escapeHtml(firstMsg.original_text).substring(0, 30)}...
+                      </button>
+                      <div class="relative px-2">
+                        <button class="p-2 text-zinc-500 hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity" onclick="window.toggleDropdown('${session.session_id}', event)">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                        </button>
+                        <div id="dropdown-${session.session_id}" class="hidden absolute right-0 top-full mt-1 bg-[#1a1a1c] border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden w-32 py-1">
+                          <button class="w-full text-left px-4 py-2 text-[16px] text-zinc-300 hover:bg-white/5 transition-colors" onclick="window.deleteChat('${session.session_id}', event)">
+                            Delete chat
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   `;
               })
               .join("");
@@ -310,6 +322,71 @@ import "../styles/global.css";
             historyList.innerHTML = `<div class="text-[16px] px-3 py-2 text-xs text-red-400">Error loading history.</div>`;
         }
       }
+
+      // Global functions for dropdowns
+      let openDropdownId: string | null = null;
+
+      (window as any).toggleDropdown = (sessionId: string, e: Event) => {
+        e.stopPropagation();
+        const dropdown = document.getElementById(`dropdown-${sessionId}`);
+
+        // Close previously opened dropdown if any
+        if (openDropdownId && openDropdownId !== sessionId) {
+          const oldDropdown = document.getElementById(
+            `dropdown-${openDropdownId}`,
+          );
+          if (oldDropdown) oldDropdown.classList.add("hidden");
+        }
+
+        if (dropdown) {
+          dropdown.classList.toggle("hidden");
+          openDropdownId = dropdown.classList.contains("hidden")
+            ? null
+            : sessionId;
+        }
+      };
+
+      document.addEventListener("click", () => {
+        if (openDropdownId) {
+          const oldDropdown = document.getElementById(
+            `dropdown-${openDropdownId}`,
+          );
+          if (oldDropdown) oldDropdown.classList.add("hidden");
+          openDropdownId = null;
+        }
+      });
+
+      (window as any).deleteChat = async (sessionId: string, e: Event) => {
+        e.stopPropagation();
+
+        // Optimistically hide the dropdown
+        if (openDropdownId) {
+          const oldDropdown = document.getElementById(
+            `dropdown-${openDropdownId}`,
+          );
+          if (oldDropdown) oldDropdown.classList.add("hidden");
+          openDropdownId = null;
+        }
+
+        try {
+          const res = await fetch(
+            `${API_URL}/history/${sessionId}?user_id=${recruiterId}`,
+            {
+              method: "DELETE",
+            },
+          );
+
+          if (!res.ok) throw new Error("Failed to delete chat");
+
+          await loadHistory();
+
+          if (currentSessionId === sessionId) {
+            resetChat();
+          }
+        } catch (error) {
+          showToast("Error deleting chat");
+        }
+      };
 
       function escapeHtml(str: string) {
         return str.replace(

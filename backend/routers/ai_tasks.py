@@ -4,6 +4,7 @@ from rate_limiter import limiter
 from groq import AsyncGroq
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import delete
 
 from schemas import PromptRequest
 from database import get_db
@@ -116,4 +117,25 @@ async def get_summary_history(request: Request, user_id: str, db: AsyncSession =
         return formatted_history
     
     except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+# DELETE Endpoint to remove a specific chat session from the database
+@router.delete("/history/{session_id}")
+@limiter.limit("20/minute")
+async def delete_summary_history(request: Request, session_id: str, user_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    Delete a specific chat session and all its summaries from history.
+    """
+    try:
+        # Delete from DB
+        result = await db.execute(
+            delete(models.Summary).where(
+                (models.Summary.session_id == session_id) & (models.Summary.user_id == user_id)
+            )
+        )
+        await db.commit()
+        return {"status": "success", "message": "Chat deleted successfully", "deleted_rows": result.rowcount}
+    except Exception as e:
+        await db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
