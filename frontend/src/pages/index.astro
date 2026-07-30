@@ -56,9 +56,17 @@ import "../styles/global.css";
     </style>
   </head>
   <body class="h-screen flex text-sm antialiased selection:bg-indigo-500/30">
+    <!-- MOBILE BACKDROP -->
+    <div
+      id="sidebarBackdrop"
+      class="fixed inset-0 bg-black/60 z-30 hidden md:hidden transition-opacity"
+    >
+    </div>
+
     <!-- LEFT SIDEBAR -->
     <aside
-      class="w-[320px] bg-[#131314] flex flex-col h-full border-r border-white/5 relative z-20 flex-shrink-0"
+      id="sidebar"
+      class="absolute md:relative -translate-x-full md:translate-x-0 transition-transform duration-300 w-[280px] sm:w-[320px] bg-[#131314] flex flex-col h-full border-r border-white/5 z-40 flex-shrink-0"
     >
       <!-- Sidebar Top -->
       <div class="p-3">
@@ -98,7 +106,28 @@ import "../styles/global.css";
     </aside>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 flex flex-col relative z-10 h-full overflow-hidden">
+    <main
+      class="flex-1 flex flex-col relative z-10 h-full overflow-hidden w-full"
+    >
+      <!-- Mobile menu button -->
+      <button
+        id="mobileMenuBtn"
+        class="md:hidden absolute top-5 left-5 z-20 p-2.5 text-zinc-400 hover:text-white bg-[#1a1a1c] hover:bg-[#232326] rounded-xl border border-white/10 shadow-lg transition-colors"
+      >
+        <svg
+          width="24"
+          height="24"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          ><path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"></path></svg
+        >
+      </button>
+
       <!-- Ambient background glow -->
       <div class="glow-bg"></div>
       <!-- INITIAL EMPTY STATE (CENTERED) -->
@@ -108,7 +137,7 @@ import "../styles/global.css";
       >
         <!-- Greeting -->
         <h1
-          class="text-6xl sm:text-[72px] font-[200] text-zinc-100 mb-12 tracking-[0.15em]"
+          class="text-[44px] sm:text-6xl md:text-[72px] font-[200] text-zinc-100 mb-12 tracking-[0.15em] text-center"
           style="font-family: 'Montserrat', sans-serif;"
         >
           SummarAIzer
@@ -198,6 +227,24 @@ import "../styles/global.css";
       const historyList = document.getElementById("historyList");
       const newChatBtn = document.getElementById("newChatBtn");
       const toast = document.getElementById("toast");
+      const sidebar = document.getElementById("sidebar");
+      const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+      const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+
+      function toggleSidebar() {
+        if (!sidebar) return;
+        const isClosed = sidebar.classList.contains("-translate-x-full");
+        if (isClosed) {
+          sidebar.classList.remove("-translate-x-full");
+          sidebarBackdrop?.classList.remove("hidden");
+        } else {
+          sidebar.classList.add("-translate-x-full");
+          sidebarBackdrop?.classList.add("hidden");
+        }
+      }
+
+      mobileMenuBtn?.addEventListener("click", toggleSidebar);
+      sidebarBackdrop?.addEventListener("click", toggleSidebar);
 
       let currentSessionId = crypto.randomUUID();
       let recruiterId = localStorage.getItem("recruiterId");
@@ -225,6 +272,11 @@ import "../styles/global.css";
         if (chatMessages) chatMessages.innerHTML = "";
         currentSessionId = crypto.randomUUID();
         mainInput.focus();
+
+        if (window.innerWidth < 768 && sidebar) {
+          sidebar.classList.add("-translate-x-full");
+          sidebarBackdrop?.classList.add("hidden");
+        }
       }
 
       function scrollToBottom() {
@@ -411,6 +463,11 @@ import "../styles/global.css";
             currentSessionId = sessionId;
             const messages = JSON.parse(decodeURIComponent(messagesStr));
             loadSession(messages);
+
+            if (window.innerWidth < 768 && sidebar) {
+              sidebar.classList.add("-translate-x-full");
+              sidebarBackdrop?.classList.add("hidden");
+            }
           }
         }
       });
