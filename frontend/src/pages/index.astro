@@ -59,14 +59,14 @@ import "../styles/global.css";
     <!-- MOBILE BACKDROP -->
     <div
       id="sidebarBackdrop"
-      class="fixed inset-0 bg-black/60 z-30 hidden md:hidden transition-opacity"
+      class="fixed inset-0 bg-black/60 z-30 hidden xl:hidden transition-opacity"
     >
     </div>
 
     <!-- LEFT SIDEBAR -->
     <aside
       id="sidebar"
-      class="absolute md:relative -translate-x-full md:translate-x-0 transition-transform duration-300 w-[280px] sm:w-[320px] bg-[#131314] flex flex-col h-full border-r border-white/5 z-40 flex-shrink-0"
+      class="absolute xl:relative -translate-x-full xl:translate-x-0 transition-transform duration-300 w-[280px] sm:w-[320px] bg-[#131314] flex flex-col h-full border-r border-white/5 z-40 flex-shrink-0"
     >
       <!-- Sidebar Top -->
       <div class="p-3">
@@ -112,7 +112,7 @@ import "../styles/global.css";
       <!-- Mobile menu button -->
       <button
         id="mobileMenuBtn"
-        class="md:hidden absolute top-5 left-5 z-20 p-2.5 text-zinc-400 hover:text-white bg-[#1a1a1c] hover:bg-[#232326] rounded-xl border border-white/10 shadow-lg transition-colors"
+        class="xl:hidden absolute top-5 left-5 z-20 p-2.5 text-zinc-400 hover:text-white bg-[#1a1a1c] hover:bg-[#232326] rounded-xl border border-white/10 shadow-lg transition-colors"
       >
         <svg
           width="24"
@@ -137,7 +137,7 @@ import "../styles/global.css";
       >
         <!-- Greeting -->
         <h1
-          class="text-[44px] sm:text-6xl md:text-[72px] font-[200] text-zinc-100 mb-12 tracking-[0.15em] text-center"
+          class="text-[44px] sm:text-5xl xl:text-[72px] font-[200] text-zinc-100 mb-12 tracking-wide sm:tracking-[0.15em] text-center"
           style="font-family: 'Montserrat', sans-serif;"
         >
           SummarAIzer
@@ -154,7 +154,7 @@ import "../styles/global.css";
             id="mainInput"
             rows="1"
             placeholder="Input your text to summarize"
-            class="flex-1 bg-transparent border-0 outline-none px-2 py-[10px] text-[20px] font-light text-zinc-100 placeholder:text-zinc-500 min-h-[48px] max-h-[200px] resize-none overflow-y-auto custom-scrollbar"
+            class="flex-1 bg-transparent border-0 outline-none px-2 py-[10px] text-[18px] sm:text-lg xl:text-[20px] font-light text-zinc-100 placeholder:text-zinc-500 min-h-[48px] max-h-[200px] resize-none overflow-y-auto custom-scrollbar"
             autocomplete="off"></textarea>
 
           <div class="flex items-center gap-1 flex-shrink-0 pr-1"></div>
@@ -193,7 +193,7 @@ import "../styles/global.css";
                 id="chatInput"
                 rows="1"
                 placeholder="Input your text to summarize"
-                class="flex-1 bg-transparent border-0 outline-none px-2 py-[10px] text-[20px] font-light text-zinc-100 placeholder:text-zinc-500 min-h-[48px] max-h-[200px] resize-none overflow-y-auto custom-scrollbar"
+                class="flex-1 bg-transparent border-0 outline-none px-2 py-[10px] text-base sm:text-lg xl:text-[20px] font-light text-zinc-100 placeholder:text-zinc-500 min-h-[48px] max-h-[200px] resize-none overflow-y-auto custom-scrollbar"
                 autocomplete="off"></textarea>
 
               <div class="flex items-center gap-1 shrink-0 pr-1"></div>
@@ -273,7 +273,7 @@ import "../styles/global.css";
         currentSessionId = crypto.randomUUID();
         mainInput.focus();
 
-        if (window.innerWidth < 768 && sidebar) {
+        if (window.innerWidth < 1280 && sidebar) {
           sidebar.classList.add("-translate-x-full");
           sidebarBackdrop?.classList.add("hidden");
         }
@@ -355,7 +355,7 @@ import "../styles/global.css";
                         <span class="mr-2 opacity-50">💬</span>${escapeHtml(firstMsg.original_text).substring(0, 30)}...
                       </button>
                       <div class="relative px-2">
-                        <button class="p-2 text-zinc-500 hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity" onclick="window.toggleDropdown('${session.session_id}', event)">
+                        <button class="p-2 text-zinc-500 hover:text-zinc-200 opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity" onclick="window.toggleDropdown('${session.session_id}', event)">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                         </button>
                         <div id="dropdown-${session.session_id}" class="hidden absolute right-0 top-full mt-1 bg-[#1a1a1c] border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden w-32 py-1">
@@ -464,7 +464,7 @@ import "../styles/global.css";
             const messages = JSON.parse(decodeURIComponent(messagesStr));
             loadSession(messages);
 
-            if (window.innerWidth < 768 && sidebar) {
+            if (window.innerWidth < 1280 && sidebar) {
               sidebar.classList.add("-translate-x-full");
               sidebarBackdrop?.classList.add("hidden");
             }
