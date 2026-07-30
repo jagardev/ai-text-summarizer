@@ -15,3 +15,13 @@ Unqualified, the word football generally means the form of football that is the 
 
 There are a number of references to traditional, ancient, or prehistoric ball games played in many different parts of the world.[5][6][7] Contemporary codes of football can be traced back to the codification of these games at English public schools during the 19th century, itself an outgrowth of medieval football.[8][9] The expansion and cultural power of the British Empire allowed these rules of football to spread to areas of British influence outside the directly controlled empire.[10] By the end of the 19th century, distinct regional codes were already developing: Gaelic football, for example, deliberately incorporated the rules of local traditional football games to maintain their heritage.[11] In 1888, the Football League was founded in England, becoming the first of many professional football associations. During the 20th century, several of the various kinds of football grew to become some of the most popular team sports in the world.[12]"""]
     )
+    session_id: str = Field(
+        ...,
+        description="Unique identifier for the conversational session.",
+        examples=["123e4567-e89b-12d3-a456-426614174000"]
+    )
+    user_id: str = Field(
+        ...,
+        description="Unique identifier for the recruiter/user.",
+        examples=["recruiter-uuid-1234"]
+    )

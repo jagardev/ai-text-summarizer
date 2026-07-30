@@ -1,0 +1,429 @@
+---
+import "../styles/global.css";
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>SummarAIzer</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&family=Montserrat:wght@200;300;400&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Outfit", sans-serif;
+        background-color: #0e0e11;
+        color: #e3e3e3;
+        margin: 0;
+        overflow: hidden;
+      }
+      .glow-bg {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80vw;
+        height: 80vh;
+        background: radial-gradient(
+          ellipse at center,
+          rgba(109, 40, 217, 0.12) 0%,
+          rgba(14, 14, 17, 0) 70%
+        );
+        pointer-events: none;
+        z-index: 0;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 4px;
+      }
+      svg {
+        display: block;
+      }
+    </style>
+  </head>
+  <body class="h-screen flex text-sm antialiased selection:bg-indigo-500/30">
+    <!-- LEFT SIDEBAR -->
+    <aside
+      class="w-[320px] bg-[#131314] flex flex-col h-full border-r border-white/5 relative z-20 flex-shrink-0"
+    >
+      <!-- Sidebar Top -->
+      <div class="p-3">
+        <!-- New Chat Button -->
+        <button
+          id="newChatBtn"
+          class="flex items-center gap-3 px-4 py-3.5 bg-[#1a1a1c] hover:bg-[#232326] rounded-full w-full border border-white/10 transition-colors mb-4 mt-2"
+        >
+          <svg
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            class="text-zinc-400"
+            ><path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"></path></svg
+          >
+          <span class="text-[18px] font-light text-zinc-200"
+            >New conversation</span
+          >
+        </button>
+      </div>
+
+      <!-- Recents List -->
+      <div class="flex-1 overflow-y-auto custom-scrollbar px-3 pb-4">
+        <div class="text-[24px] text-zinc-500 font-medium px-2 mb-2 mt-2">
+          Chat history
+        </div>
+        <div id="historyList" class="space-y-0.5">
+          <div class="px-2 py-2 text-xs text-zinc-500">Loading...</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col relative z-10 h-full overflow-hidden">
+      <!-- Ambient background glow -->
+      <div class="glow-bg"></div>
+      <!-- INITIAL EMPTY STATE (CENTERED) -->
+      <div
+        id="emptyState"
+        class="flex-1 flex flex-col items-center justify-center px-4 w-full max-w-4xl mx-auto h-full"
+      >
+        <!-- Greeting -->
+        <h1
+          class="text-6xl sm:text-[72px] font-[200] text-zinc-100 mb-12 tracking-[0.15em]"
+          style="font-family: 'Montserrat', sans-serif;"
+        >
+          SummarAIzer
+        </h1>
+
+        <!-- Search Pill -->
+        <div
+          class="w-full max-w-[800px] bg-[#171717] rounded-[64px] flex items-center px-5 py-2 hover:bg-[#1b1b1b] transition-colors focus-within:bg-[#252628] border border-white/10"
+        >
+          <!-- Search Icon / Placeholder space instead of plus button -->
+          <div class="px-3"></div>
+
+          <textarea
+            id="mainInput"
+            rows="1"
+            placeholder="Input your text to summarize"
+            class="flex-1 bg-transparent border-0 outline-none px-2 py-[10px] text-[20px] font-light text-zinc-100 placeholder:text-zinc-500 min-h-[48px] max-h-[200px] resize-none overflow-y-auto custom-scrollbar"
+            autocomplete="off"></textarea>
+
+          <div class="flex items-center gap-1 flex-shrink-0 pr-1"></div>
+        </div>
+      </div>
+
+      <!-- CHAT THREAD STATE (HIDDEN BY DEFAULT) -->
+      <div id="chatThread" class="hidden flex-col h-full w-full pt-6">
+        <!-- Messages Area -->
+        <div
+          id="chatScrollArea"
+          class="flex-1 overflow-y-auto px-4 custom-scrollbar pb-40"
+        >
+          <div class="max-w-3xl mx-auto space-y-8" id="chatMessages">
+            <!-- Messages will be injected here dynamically -->
+          </div>
+        </div>
+
+        <!-- Sticky Bottom Input for Chat Mode -->
+        <div
+          class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#0e0e11] via-[#0e0e11] to-transparent pt-10 pb-10 px-4"
+        >
+          <div class="max-w-3xl mx-auto">
+            <div
+              class="w-full bg-[#171717] rounded-[64px] flex items-center px-5 py-2 hover:bg-[#1b1b1b] transition-colors border border-white/10 focus-within:bg-[#252628]"
+            >
+              <!-- Search Icon / Placeholder space instead of plus button -->
+              <div class="px-2"></div>
+
+              <textarea
+                id="chatInput"
+                rows="1"
+                placeholder="Input your text to summarize"
+                class="flex-1 bg-transparent border-0 outline-none px-2 py-[10px] text-[20px] font-light text-zinc-100 placeholder:text-zinc-500 min-h-[48px] max-h-[200px] resize-none overflow-y-auto custom-scrollbar"
+                autocomplete="off"></textarea>
+
+              <div class="flex items-center gap-1 shrink-0 pr-1"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- TOAST NOTIFICATION -->
+    <div
+      id="toast"
+      class="fixed top-6 right-6 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg hidden z-50"
+    >
+    </div>
+
+    <script>
+      const API_URL = import.meta.env.PUBLIC_API_URL || "http://127.0.0.1:8000/ai";
+
+      const emptyState = document.getElementById("emptyState");
+      const chatThread = document.getElementById("chatThread");
+      const mainInput = document.getElementById(
+        "mainInput",
+      ) as HTMLInputElement;
+      const chatInput = document.getElementById(
+        "chatInput",
+      ) as HTMLInputElement;
+      const chatMessages = document.getElementById("chatMessages");
+      const chatScrollArea = document.getElementById("chatScrollArea");
+      const historyList = document.getElementById("historyList");
+      const newChatBtn = document.getElementById("newChatBtn");
+      const toast = document.getElementById("toast");
+
+      let currentSessionId = crypto.randomUUID();
+      let recruiterId = localStorage.getItem("recruiterId");
+      if (!recruiterId) {
+        recruiterId = crypto.randomUUID();
+        localStorage.setItem("recruiterId", recruiterId);
+      }
+
+      function autoResize(el: HTMLTextAreaElement) {
+        el.style.height = "auto";
+        el.style.height = el.scrollHeight + "px";
+      }
+
+      mainInput.addEventListener("input", () => autoResize(mainInput));
+      chatInput.addEventListener("input", () => autoResize(chatInput));
+
+      function resetChat() {
+        emptyState?.classList.remove("hidden");
+        chatThread?.classList.add("hidden");
+        chatThread?.classList.remove("flex");
+        mainInput.value = "";
+        chatInput.value = "";
+        autoResize(mainInput);
+        autoResize(chatInput);
+        if (chatMessages) chatMessages.innerHTML = "";
+        currentSessionId = crypto.randomUUID();
+        mainInput.focus();
+      }
+
+      function scrollToBottom() {
+        setTimeout(() => {
+          if (chatScrollArea) {
+            chatScrollArea.scrollTop = chatScrollArea.scrollHeight;
+          }
+        }, 50);
+      }
+
+      function createUserMessageHTML(text: string) {
+        return `
+          <div class="flex justify-end">
+            <div class="bg-[#1e1f20] px-7 py-5 rounded-3xl rounded-tr-sm text-[19px] font-light text-zinc-100 max-w-[85%] whitespace-pre-wrap leading-relaxed">${escapeHtml(text)}</div>
+          </div>
+        `;
+      }
+
+      function createAIResponseHTML(
+        text: string,
+        id: string,
+        isLoading: boolean = false,
+      ) {
+        return `
+          <div class="flex items-start gap-4">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 p-[1px] flex-shrink-0 mt-1">
+              <div class="w-full h-full bg-[#131314] rounded-full flex items-center justify-center">
+                <svg width="14" height="14" fill="currentColor" class="text-indigo-400" viewBox="0 0 24 24"><path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"></path></svg>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0 pt-1">
+              <div id="loading-${id}" class="${isLoading ? "space-y-3 mt-2 w-3/4" : "hidden"}">
+                <div class="h-5 bg-white/10 rounded-full animate-pulse w-full"></div>
+                <div class="h-5 bg-white/10 rounded-full animate-pulse w-4/5"></div>
+                <div class="h-5 bg-white/10 rounded-full animate-pulse w-2/3"></div>
+              </div>
+              <div id="ai-${id}" class="text-[19px] font-light text-zinc-200 leading-relaxed whitespace-pre-wrap ${isLoading ? "hidden" : ""}">${escapeHtml(text)}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      newChatBtn?.addEventListener("click", resetChat);
+
+      function showToast(msg: string) {
+        if (!toast) return;
+        toast.textContent = msg;
+        toast.classList.remove("hidden");
+        setTimeout(() => toast.classList.add("hidden"), 4000);
+      }
+
+      async function loadHistory() {
+        try {
+          const res = await fetch(
+            `${API_URL}/history?limit=15&user_id=${recruiterId}`,
+          );
+          if (!res.ok) throw new Error();
+          const items = await res.json();
+
+          if (!items.length) {
+            if (historyList)
+              historyList.innerHTML = `<div class="text-[16px] px-3 py-2 text-xs text-zinc-500">No conversations, start a new one.</div>`;
+            return;
+          }
+
+          if (historyList) {
+            historyList.innerHTML = items
+              .map((session: any) => {
+                const firstMsg = session.messages[0];
+                const encodedMessages = encodeURIComponent(
+                  JSON.stringify(session.messages),
+                );
+                return `
+                    <button class="w-full text-left px-4 py-3 rounded-xl hover:bg-[#232326] text-[17px] font-light text-zinc-300 truncate transition-all duration-200 cursor-pointer history-item" data-session="${session.session_id}" data-messages="${encodedMessages}">
+                      <span class="mr-2 opacity-50">💬</span>${escapeHtml(firstMsg.original_text).substring(0, 30)}...
+                    </button>
+                  `;
+              })
+              .join("");
+          }
+        } catch (e) {
+          if (historyList)
+            historyList.innerHTML = `<div class="text-[16px] px-3 py-2 text-xs text-zinc-500">No conversations, start a new one.</div>`;
+        }
+      }
+
+      function escapeHtml(str: string) {
+        return str.replace(
+          /[&<>'"]/g,
+          (tag) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              "'": "&#39;",
+              '"': "&quot;",
+            })[tag] || tag,
+        );
+      }
+
+      historyList?.addEventListener("click", (e) => {
+        const btn = (e.target as HTMLElement).closest(".history-item");
+        if (btn) {
+          const sessionId = btn.getAttribute("data-session") || "";
+          const messagesStr = btn.getAttribute("data-messages") || "";
+          if (sessionId && messagesStr) {
+            currentSessionId = sessionId;
+            const messages = JSON.parse(decodeURIComponent(messagesStr));
+            loadSession(messages);
+          }
+        }
+      });
+
+      function loadSession(messages: any[]) {
+        emptyState?.classList.add("hidden");
+        chatThread?.classList.remove("hidden");
+        chatThread?.classList.add("flex");
+
+        if (chatMessages) {
+          chatMessages.innerHTML = messages
+            .map((m: any) => {
+              return (
+                createUserMessageHTML(m.original_text) +
+                createAIResponseHTML(m.summary_text, m.id.toString(), false)
+              );
+            })
+            .join("");
+        }
+        scrollToBottom();
+      }
+
+      async function submitPrompt(text: string) {
+        if (text.trim().length < 5) return;
+
+        emptyState?.classList.add("hidden");
+        chatThread?.classList.remove("hidden");
+        chatThread?.classList.add("flex");
+
+        const msgId = Date.now().toString();
+        if (chatMessages) {
+          chatMessages.innerHTML +=
+            createUserMessageHTML(text) + createAIResponseHTML("", msgId, true);
+        }
+        scrollToBottom();
+
+        mainInput.value = "";
+        chatInput.value = "";
+
+        // Reset input height
+        autoResize(mainInput);
+        autoResize(chatInput);
+
+        try {
+          const res = await fetch(`${API_URL}/summarize`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              session_id: currentSessionId,
+              user_id: recruiterId,
+              text_input: text,
+            }),
+          });
+
+          if (!res.ok) throw new Error("Error en el servidor");
+          const data = await res.json();
+
+          const loadingEl = document.getElementById(`loading-${msgId}`);
+          const aiEl = document.getElementById(`ai-${msgId}`);
+          if (loadingEl) loadingEl.classList.add("hidden");
+          if (aiEl) {
+            aiEl.textContent = data.summary;
+            aiEl.classList.remove("hidden");
+          }
+          loadHistory();
+          scrollToBottom();
+        } catch (err) {
+          showToast(
+            "Error generating the resume. Please verify your connection.",
+          );
+          const loadingEl = document.getElementById(`loading-${msgId}`);
+          const aiEl = document.getElementById(`ai-${msgId}`);
+          if (loadingEl) loadingEl.classList.add("hidden");
+          if (aiEl) {
+            aiEl.textContent = "API connection error.";
+            aiEl.classList.remove("hidden");
+          }
+          scrollToBottom();
+        }
+      }
+
+      mainInput?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          submitPrompt(mainInput.value);
+        }
+      });
+
+      chatInput?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          submitPrompt(chatInput.value);
+        }
+      });
+
+      loadHistory();
+    </script>
+  </body>
+</html>

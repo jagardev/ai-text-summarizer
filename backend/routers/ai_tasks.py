@@ -49,6 +49,8 @@ async def summarize_text(request: Request, payload: PromptRequest, db: AsyncSess
         
         # Create a new instance using our object Summary
         new_summary = models.Summary(
+            user_id=payload.user_id,
+            session_id=payload.session_id,
             original_text=payload.text_input,
             summary_text=final_summary
         )
@@ -61,6 +63,7 @@ async def summarize_text(request: Request, payload: PromptRequest, db: AsyncSess
         # Return the clean JSON to the frontend
         return {
             "id": new_summary.id,
+            "session_id": new_summary.session_id,
             "original_text": new_summary.original_text,
             "summary": new_summary.summary_text
         }
@@ -74,27 +77,41 @@ async def summarize_text(request: Request, payload: PromptRequest, db: AsyncSess
 # GET Endpoint to make a query using SQLAlchemy, retrieving our history of summaries stored in our db
 @router.get("/history")
 @limiter.limit("5/minute") # 5 prompts per minute at max
-async def get_summary_history(request: Request, db: AsyncSession = Depends(get_db), limit: int = 10) -> list:
+async def get_summary_history(request: Request, user_id: str, db: AsyncSession = Depends(get_db), limit: int = 10) -> list:
     """
     Obtain a history of texts that have been summarized.
     """
     try:
         # Query to our database using SQLAlchemy.
-        # We ask for every summary, ordered by latest to oldest, limiting to 10 results maximum.
+        # We ask for every summary of the user, ordered by oldest to newest to reconstruct the chat properly.
         result = await db.execute(
-            select(models.Summary).order_by(models.Summary.created_at.desc()).limit(limit)
+            select(models.Summary).where(models.Summary.user_id == user_id).order_by(models.Summary.created_at.asc())
         )
         history = result.scalars().all()
         
-        # Convert the objects to dictionaries
-        formatted_history = []
+        # Group by session_id
+        sessions = {}
         for item in history:
-            formatted_history.append({
+            if item.session_id not in sessions:
+                sessions[item.session_id] = []
+            sessions[item.session_id].append({
                 "id": item.id,
                 "original_text": item.original_text,
                 "summary_text": item.summary_text,
                 "created_at": item.created_at
             })
+        
+        # Convert the dictionary to a list, ordered by the latest created_at of their last message
+        formatted_history = []
+        for session_id, messages in sessions.items():
+            formatted_history.append({
+                "session_id": session_id,
+                "messages": messages
+            })
+            
+        # Sort sessions by the created_at of their latest message descending, and limit to `limit`
+        formatted_history.sort(key=lambda x: x["messages"][-1]["created_at"], reverse=True)
+        formatted_history = formatted_history[:limit]
         
         return formatted_history
     

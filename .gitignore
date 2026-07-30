@@ -12,3 +12,7 @@ __pycache__/
 # Hidden files from different operating systems
 .DS_Store
 Thumbs.db
+
+# Frontend
+node_modules/
+dist/

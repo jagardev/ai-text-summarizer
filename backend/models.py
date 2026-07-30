@@ -10,6 +10,8 @@ class Summary(Base):
     __tablename__ = "summaries"
     
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, index=True, nullable=False)
+    session_id = Column(String, index=True, nullable=False)
     original_text = Column(String, nullable=False)
     summary_text = Column(String, nullable=False)
     
