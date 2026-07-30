@@ -7,7 +7,7 @@ class PromptRequest(BaseModel):
     text_input: str = Field(
         ..., 
         min_length=10, 
-        max_length=10000,
+        max_length=50000,
         description="The original text to be summarized by the AI.",
         examples=["""Football is a family of team sports in which the object is to get the ball over a goal line, into a goal, or between goalposts using merely the body (by carrying, throwing, or kicking).[1][2][3]
 
