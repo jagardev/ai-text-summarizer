@@ -76,7 +76,7 @@ async def summarize_text(request: Request, payload: PromptRequest, db: AsyncSess
 
 # GET Endpoint to make a query using SQLAlchemy, retrieving our history of summaries stored in our db
 @router.get("/history")
-@limiter.limit("5/minute") # 5 prompts per minute at max
+@limiter.limit("60/minute") # Increased limit to allow frequent page refreshes
 async def get_summary_history(request: Request, user_id: str, db: AsyncSession = Depends(get_db), limit: int = 10) -> list:
     """
     Obtain a history of texts that have been summarized.
