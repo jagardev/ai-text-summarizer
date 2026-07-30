@@ -36,18 +36,11 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Define CORS headers permissions
-origins = [
-    "http://localhost:5173", # React
-    "http://localhost:4321", # Astro
-    "http://127.0.0.1:4321", # Astro IP
-    "https://ai-text-summarizer.vercel.app", # Vercel URL
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
