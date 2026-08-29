@@ -43,7 +43,7 @@ async def summarize_text(request: Request, payload: PromptRequest, db: AsyncSess
                         "content": f"Summarize this text: {payload.text_input}",
                     }
                 ],
-                model="llama-3.3-70b-versatile",
+                model="openai/gpt-oss-20b",
             )
         except Exception as e:
             # Fallback model in case of failure
@@ -59,7 +59,7 @@ async def summarize_text(request: Request, payload: PromptRequest, db: AsyncSess
                         "content": f"Summarize this text: {payload.text_input}",
                     }
                 ],
-                model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-120b",
             )
         
         # Extract the text response from the Groq object
