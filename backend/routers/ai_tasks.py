@@ -31,19 +31,36 @@ async def summarize_text(request: Request, payload: PromptRequest, db: AsyncSess
     try:
         # Call to the Groq API using the official SDK
         # We use Llama 3 (8B parameters), which is a fast open-source model free on Groq
-        chat_completion = await client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a professional assistant. Your task is to summarize the text provided by the user in a concise and clear manner.",
-                },
-                {
-                    "role": "user",
-                    "content": f"Summarize this text: {payload.text_input}",
-                }
-            ],
-            model="llama-3.1-8b-instant",
-        )
+        try:
+            chat_completion = await client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a professional assistant. Your task is to summarize the text provided by the user in a concise and clear manner.",
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Summarize this text: {payload.text_input}",
+                    }
+                ],
+                model="llama-3.1-8b-instant",
+            )
+        except Exception as e:
+            # Fallback model in case of failure
+            print(f"Primary model failed ({e}), trying fallback model...")
+            chat_completion = await client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a professional assistant. Your task is to summarize the text provided by the user in a concise and clear manner.",
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Summarize this text: {payload.text_input}",
+                    }
+                ],
+                model="mixtral-8x7b-32768",
+            )
         
         # Extract the text response from the Groq object
         final_summary = chat_completion.choices[0].message.content
