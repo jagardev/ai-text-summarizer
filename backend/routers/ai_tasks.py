@@ -43,7 +43,7 @@ async def summarize_text(request: Request, payload: PromptRequest, db: AsyncSess
                         "content": f"Summarize this text: {payload.text_input}",
                     }
                 ],
-                model="llama-3.1-8b-instant",
+                model="llama-3.3-70b-versatile",
             )
         except Exception as e:
             # Fallback model in case of failure
@@ -59,7 +59,7 @@ async def summarize_text(request: Request, payload: PromptRequest, db: AsyncSess
                         "content": f"Summarize this text: {payload.text_input}",
                     }
                 ],
-                model="mixtral-8x7b-32768",
+                model="llama-3.1-8b-instant",
             )
         
         # Extract the text response from the Groq object
